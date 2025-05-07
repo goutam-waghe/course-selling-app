@@ -16,6 +16,8 @@ import PaymentSuccess from './pages/PaymentSuccess.jsx'
 import PaymentFailed from './pages/PaymentFailed.jsx'
 import CourseDetails from './pages/CourseDetails.jsx'
 import Profile from './pages/UserProfile.jsx'
+import UpdateProfile from './pages/UpdateProfile.jsx'
+import ChangePassword from './pages/ChangePassword.jsx'
 const App = () => {
   return (
     <BrowserRouter>
@@ -28,6 +30,8 @@ const App = () => {
       <Route path='/forgetpassword' element={<ForgetPassword/>}/>
       <Route path='/resetpassword/:token' element={<ResetPassword/>}/>
       <Route path='/profile' element={<Profile/>}/>
+      <Route path='/updateprofile' element={<UpdateProfile/>}/>
+      <Route path='/changepassword' element={<ChangePassword/>}/>
       <Route path='/courses' element={<Courses/>}/>
       <Route path='/course/:id' element={<CourseDetails/>}/>
       <Route path='/contact' element={<ContactUs/>}/>
