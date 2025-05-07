@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+* {
+  box-sizing: border-box;
+}
+
 @keyframes float {
 
   0%,
@@ -14,4 +18,23 @@
 
 .float-img {
   animation: float 3s ease-in-out infinite;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari */
+}
+
+.file::file-selector-button {
+  cursor: pointer;
+  border: none;
+  width: 100px;
+  background-color: rgb(255, 217, 1);
 }

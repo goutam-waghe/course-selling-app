@@ -31,7 +31,7 @@ const Home = () => {
        
       </div>
       <div className='flex justify-center h-1/2 lg:h-screen items-center bg-[#eee]'>
-        <video src={video} controls  loop disablePictureInPicture controlsList='nodownload  noplaybackrate' className='w-full p-10 lg:w-3/4'></video>
+        <video src={video} controls  loop disablePictureInPicture controlsList='nodownload nofullscreen noplaybackrate' className='w-full p-10 lg:w-3/4'></video>
 
       </div>
     </div>
