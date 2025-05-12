@@ -19,7 +19,7 @@ const Header = () => {
     setbarIsOpne(!barisOpen)
   }
   return (
-    <div className="flex w-full px-4 py-2  shadow-sm justify-between items-center fixed text-white bg-white z-10 ">
+    <div className="flex w-full px-4 py-2  shadow-sm justify-between items-center fixed text-white  z-10 ">
       <div onClick={barHandler} className="bg-yellow-500 rounded-full p-2">
         <FaBars className="text-sm" />
       </div>
@@ -63,10 +63,10 @@ const Header = () => {
             </div>
           )}
           {role === "admin" ? (
-            <div className="flex gap-1 items-center justify-center p-2 bg-yellow-500">
+          <Link  onClick={barHandler} to={"admin/dashboard"}> <div className="flex gap-1 items-center justify-center p-2 bg-yellow-500">
               <FaTachometerAlt />
               <p>Dashboard</p>
-            </div>
+            </div></Link> 
           ) : (
             <></>
           )}

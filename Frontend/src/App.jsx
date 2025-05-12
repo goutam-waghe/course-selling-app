@@ -18,6 +18,10 @@ import CourseDetails from './pages/CourseDetails.jsx'
 import Profile from './pages/UserProfile.jsx'
 import UpdateProfile from './pages/UpdateProfile.jsx'
 import ChangePassword from './pages/ChangePassword.jsx'
+import DashBoard from './pages/Admin/DashBoard.jsx'
+import AdminCourses from './pages/Admin/AdminCourses.jsx'
+import CreateCourses from './pages/Admin/CreateCourses.jsx'
+import Users from './pages/Admin/Users.jsx'
 const App = () => {
   return (
     <BrowserRouter>
@@ -40,6 +44,13 @@ const App = () => {
       <Route path='/paymentSuccess' element={<PaymentSuccess/>}/>
       <Route path='/PaymentFail' element={<PaymentFailed/>}/>
       <Route path='*' element={<PageNotFound/>}/>
+
+
+      {/* addmin routes  */}
+      <Route path='/admin/dashboard' element={<DashBoard/>} />
+      <Route path='/admin/courses' element={<AdminCourses/>} />
+      <Route path='/admin/createcourse' element={<CreateCourses/>} />
+      <Route path='/admin/users' element={<Users/>} />
     </Routes>
     <Footer/>
     </BrowserRouter>
