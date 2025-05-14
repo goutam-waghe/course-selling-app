@@ -1,8 +1,10 @@
 import express from "express";
 import {
+  addToPlaylist,
   changePassword,
   forgetPassword,
   getMyPorfile,
+  removeFromPlaylist,
   resetPassword,
   updateProfile,
   updateProfilePicture,
@@ -26,5 +28,9 @@ userRouter
   .put(isAuthanticated, updateProfilePicture);
 userRouter.route("/forgetpassword").post(forgetPassword);
 userRouter.route("/resetpassword/:token").put(resetPassword);
+userRouter.route("/addtoplaylist").post(isAuthanticated, addToPlaylist);
+userRouter
+  .route("/removefromplaylist")
+  .delete(isAuthanticated, removeFromPlaylist);
 
 export default userRouter;

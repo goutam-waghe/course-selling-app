@@ -4,6 +4,7 @@ import ErrorHandler from "../utils/ErroHandler.js";
 import crypto from "crypto";
 import { sendToken } from "../utils/sendToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import { CourseModel } from "../models/course.model.js";
 
 export const userRegister = cathAsyncError(async function (req, res, next) {
   const { name, email, password } = req.body;
@@ -174,4 +175,50 @@ export const resetPassword = cathAsyncError(async function (req, res, next) {
   });
 });
 //add to playlist
+export const addToPlaylist = cathAsyncError(async function (req, res, next) {
+  const user = await UserModel.findById(req.user._id);
+  const course = await CourseModel.findById(req.body.id);
+  if (!course) {
+    return next(new ErrorHandler("course not found", 404));
+  }
+
+  const isAleardy = user.playlist.find((val) => {
+    if (val.course.toString() === course._id.toString()) return true;
+  });
+  if (isAleardy) {
+    return next(new ErrorHandler("course is Already in playlist", 409));
+  }
+
+  user.playlist.push({
+    course: course._id,
+    poster: course.poster.url,
+  });
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "course added in playlist",
+  });
+});
 //remove from playlist
+export const removeFromPlaylist = cathAsyncError(async function (
+  res,
+  res,
+  next
+) {
+  const courseId = req.body.id;
+  const user = await UserModel.findById(req.user._id);
+  const course = await CourseModel.findById(courseId);
+  if (!course) {
+    return next(new ErrorHandler("course not found", 404));
+  }
+
+  user.playlist = user.playlist.filter((val) => {
+    return course._id.toString() !== val.course.toString();
+  });
+
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "course remove from playlist",
+  });
+});
