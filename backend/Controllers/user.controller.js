@@ -1,8 +1,9 @@
 import cathAsyncError from "../middlewares/CatchAsyncError.js";
 import { UserModel } from "../models/user.model.js";
 import ErrorHandler from "../utils/ErroHandler.js";
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { sendToken } from "../utils/sendToken.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 export const userRegister = cathAsyncError(async function (req, res, next) {
   const { name, email, password } = req.body;
@@ -38,26 +39,139 @@ export const userLogin = cathAsyncError(async function (req, res, next) {
   if (!email || !password) {
     return next(new ErrorHandler("all fields are required", 400));
   }
-  const user = await UserModel.findOne(email).select("+password");
+  const user = await UserModel.findOne({ email }).select("+password");
 
   if (!user) {
     return next(new ErrorHandler("password or email is incorrect", 409));
   }
 
-  const isMatched = await bcrypt.compare(password, user.password);
+  const isMatched = await user.ComparePassword(password);
+  console.log(isMatched);
   if (!isMatched) {
     return next(new ErrorHandler("password or email is incorrect ", 400));
   }
 
-  sendToken(res, user, "login successful", 200);
+  sendToken(res, user, `Welcome back! ${user.name}`, 200);
 });
 
 //logout
-//get profile
-// change password
-// update profile
-//update profile picture
+export const userLogout = cathAsyncError(async function (req, res, next) {
+  const options = {
+    expires: new Date(Date.now()),
+    httpOnly: true,
+    // secure: true,
+    sameSite: "none",
+  };
+  res.status(200).cookie("token", null, options).json({
+    success: true,
+    message: "logout successfully",
+  });
+});
 
+//get profile
+export const getMyPorfile = cathAsyncError(async function (req, res, next) {
+  const user = await UserModel.findById(req.user._id);
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+// change password
+export const changePassword = cathAsyncError(async function (req, res, next) {
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    return next(new ErrorHandler("all input filed required", 400));
+  }
+  const user = await UserModel.findById(req.user._id).select("+password");
+  const isMatched = await user.ComparePassword(oldPassword);
+  if (!isMatched) return next(new ErrorHandler("password incorrect", 400));
+
+  user.password = newPassword;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "password changed successfully",
+  });
+});
+
+// update profile
+export const updateProfile = cathAsyncError(async function (req, res, next) {
+  const { name, email } = req.body;
+  const user = await UserModel.findById(req.user._id);
+  if (name) user.name = name;
+  if (email) user.email = email;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "profile updated successfully",
+  });
+});
+//update profile picture
+export const updateProfilePicture = cathAsyncError(async function (
+  req,
+  res,
+  next
+) {
+  //coundary image upload
+  res.status(200).json({
+    success: true,
+    message: "profile changed successfully",
+  });
+});
 //forget password
+export const forgetPassword = cathAsyncError(async function (req, res, next) {
+  const { email } = req.body;
+  if (!email) {
+    return next(new ErrorHandler("all input filed required", 400));
+  }
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    return next(new ErrorHandler("user not found", 404));
+  }
+
+  const resetToken = await user.getResetToken();
+  const url = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`;
+
+  const message = `click on the link to reset password , ${url} , if you have not requested then please ignore`;
+
+  //reset toke via mail
+  await sendEmail(user.email, "course Application Password reset", message);
+
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: `reset token send to yout email ${user.email}`,
+  });
+});
+
+//reset password
+export const resetPassword = cathAsyncError(async function (req, res, next) {
+  const { token } = req.params;
+
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const user = await UserModel.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+  if (!user) {
+    return next(new ErrorHandler("token is Invalid or Expires", 404));
+  }
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "password changed successfully",
+  });
+});
 //add to playlist
 //remove from playlist
