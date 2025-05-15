@@ -1,10 +1,10 @@
-import cathAsyncError from "../middlewares/CatchAsyncError.js";
+import catchAsyncError from "../middlewares/CatchAsyncError.js";
 import { CourseModel } from "../models/course.model.js";
 import getDataUri from "../utils/dataUri.js";
 import ErrorHandler from "../utils/ErroHandler.js";
 import cloudinary from "cloudinary";
 //get all courses
-export const getAllcourses = cathAsyncError(async function (req, res) {
+export const getAllcourses = catchAsyncError(async function (req, res) {
   const courses = await CourseModel.find().select("-lectures");
   res.status(200).json({
     message: "Success",
@@ -13,7 +13,7 @@ export const getAllcourses = cathAsyncError(async function (req, res) {
 });
 
 //create course
-export const createCourse = cathAsyncError(async function (req, res, next) {
+export const createCourse = catchAsyncError(async function (req, res, next) {
   const { title, description, createdBy, category } = req.body;
   if (!title || !description || !createdBy || !category) {
     return next(new ErrorHandler("please add all fields", 400));
@@ -41,7 +41,7 @@ export const createCourse = cathAsyncError(async function (req, res, next) {
 });
 
 //get all lectures
-export const getCourseLectures = cathAsyncError(async function (
+export const getCourseLectures = catchAsyncError(async function (
   req,
   res,
   next
@@ -60,7 +60,7 @@ export const getCourseLectures = cathAsyncError(async function (
 });
 
 //add lecture to course
-export const addLecture = cathAsyncError(async function (req, res, next) {
+export const addLecture = catchAsyncError(async function (req, res, next) {
   const courseId = req.params.id;
   const { title, description } = req.body;
   const course = await CourseModel.findById(courseId);
@@ -92,7 +92,7 @@ export const addLecture = cathAsyncError(async function (req, res, next) {
 
 //delete course api
 
-export const deleteCourse = cathAsyncError(async function (req, res, next) {
+export const deleteCourse = catchAsyncError(async function (req, res, next) {
   const courseId = req.params.id;
   const course = await CourseModel.findById(courseId);
 
@@ -112,7 +112,7 @@ export const deleteCourse = cathAsyncError(async function (req, res, next) {
 });
 
 //delete lecture api
-export const deleteLecture = cathAsyncError(async function (req, res, next) {
+export const deleteLecture = catchAsyncError(async function (req, res, next) {
   const { courseId, lectureId } = req.query;
   const course = await CourseModel.findById(courseId);
 

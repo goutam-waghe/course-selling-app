@@ -1,4 +1,4 @@
-import cathAsyncError from "../middlewares/CatchAsyncError.js";
+import catchAsyncError from "../middlewares/CatchAsyncError.js";
 import { UserModel } from "../models/user.model.js";
 import ErrorHandler from "../utils/ErroHandler.js";
 import crypto from "crypto";
@@ -8,7 +8,7 @@ import { CourseModel } from "../models/course.model.js";
 import getDataUri from "../utils/dataUri.js";
 import cloudinary from "cloudinary";
 
-export const userRegister = cathAsyncError(async function (req, res, next) {
+export const userRegister = catchAsyncError(async function (req, res, next) {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return next(new ErrorHandler("all fields are required", 400));
@@ -38,7 +38,7 @@ export const userRegister = cathAsyncError(async function (req, res, next) {
 });
 
 //login api
-export const userLogin = cathAsyncError(async function (req, res, next) {
+export const userLogin = catchAsyncError(async function (req, res, next) {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -60,7 +60,7 @@ export const userLogin = cathAsyncError(async function (req, res, next) {
 });
 
 //logout
-export const userLogout = cathAsyncError(async function (req, res, next) {
+export const userLogout = catchAsyncError(async function (req, res, next) {
   const options = {
     expires: new Date(Date.now()),
     httpOnly: true,
@@ -74,7 +74,7 @@ export const userLogout = cathAsyncError(async function (req, res, next) {
 });
 
 //get profile
-export const getMyPorfile = cathAsyncError(async function (req, res, next) {
+export const getMyPorfile = catchAsyncError(async function (req, res, next) {
   const user = await UserModel.findById(req.user._id);
   res.status(200).json({
     success: true,
@@ -82,7 +82,7 @@ export const getMyPorfile = cathAsyncError(async function (req, res, next) {
   });
 });
 // change password
-export const changePassword = cathAsyncError(async function (req, res, next) {
+export const changePassword = catchAsyncError(async function (req, res, next) {
   const { oldPassword, newPassword } = req.body;
   if (!oldPassword || !newPassword) {
     return next(new ErrorHandler("all input filed required", 400));
@@ -102,7 +102,7 @@ export const changePassword = cathAsyncError(async function (req, res, next) {
 });
 
 // update profile
-export const updateProfile = cathAsyncError(async function (req, res, next) {
+export const updateProfile = catchAsyncError(async function (req, res, next) {
   const { name, email } = req.body;
   const user = await UserModel.findById(req.user._id);
   if (name) user.name = name;
@@ -116,7 +116,7 @@ export const updateProfile = cathAsyncError(async function (req, res, next) {
   });
 });
 //update profile picture
-export const updateProfilePicture = cathAsyncError(async function (
+export const updateProfilePicture = catchAsyncError(async function (
   req,
   res,
   next
@@ -136,7 +136,7 @@ export const updateProfilePicture = cathAsyncError(async function (
   });
 });
 //forget password
-export const forgetPassword = cathAsyncError(async function (req, res, next) {
+export const forgetPassword = catchAsyncError(async function (req, res, next) {
   const { email } = req.body;
   if (!email) {
     return next(new ErrorHandler("all input filed required", 400));
@@ -162,7 +162,7 @@ export const forgetPassword = cathAsyncError(async function (req, res, next) {
 });
 
 //reset password
-export const resetPassword = cathAsyncError(async function (req, res, next) {
+export const resetPassword = catchAsyncError(async function (req, res, next) {
   const { token } = req.params;
 
   const resetPasswordToken = crypto
@@ -187,7 +187,7 @@ export const resetPassword = cathAsyncError(async function (req, res, next) {
   });
 });
 //add to playlist
-export const addToPlaylist = cathAsyncError(async function (req, res, next) {
+export const addToPlaylist = catchAsyncError(async function (req, res, next) {
   const user = await UserModel.findById(req.user._id);
   const course = await CourseModel.findById(req.body.id);
   if (!course) {
@@ -212,7 +212,7 @@ export const addToPlaylist = cathAsyncError(async function (req, res, next) {
   });
 });
 //remove from playlist
-export const removeFromPlaylist = cathAsyncError(async function (res, next) {
+export const removeFromPlaylist = catchAsyncError(async function (res, next) {
   const courseId = req.body.id;
   const user = await UserModel.findById(req.user._id);
   const course = await CourseModel.findById(courseId);
@@ -228,5 +228,64 @@ export const removeFromPlaylist = cathAsyncError(async function (res, next) {
   res.status(200).json({
     success: true,
     message: "course remove from playlist",
+  });
+});
+
+//get all users
+export const getAllUsers = catchAsyncError(async function (req, res, next) {
+  const users = await UserModel.find();
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+
+//update user
+export const updateRole = catchAsyncError(async function (req, res, next) {
+  const user = await UserModel.findById(req.params.id);
+  if (!user) return next(new ErrorHandler("user not found", 404));
+
+  user.role === "user" ? (user.role = "admin") : (user.role = "user");
+
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "user updated successfully",
+  });
+});
+
+//delete user
+export const deleteUser = catchAsyncError(async function (req, res, next) {
+  const user = await UserModel.findById(req.params.id);
+  if (!user) return next(new ErrorHandler("user not found", 404));
+
+  await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+
+  //cencel subscription
+
+  await user.deleteOne();
+  res.status(200).json({
+    success: true,
+    message: "user deleted successfully",
+  });
+});
+
+//delete my profile
+export const deleteMyProfile = catchAsyncError(async function (req, res, next) {
+  const user = await UserModel.findById(req.user._id);
+  await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+
+  //cencel subscription
+
+  const options = {
+    expires: new Date(Date.now()),
+    httpOnly: true,
+    // secure: true,
+    sameSite: "none",
+  };
+  await user.deleteOne();
+  res.status(200).cookie("token", null, options).json({
+    success: true,
+    message: "your profile deleted successfully",
   });
 });
