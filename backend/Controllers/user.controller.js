@@ -5,10 +5,11 @@ import crypto from "crypto";
 import { sendToken } from "../utils/sendToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { CourseModel } from "../models/course.model.js";
+import getDataUri from "../utils/dataUri.js";
+import cloudinary from "cloudinary";
 
 export const userRegister = cathAsyncError(async function (req, res, next) {
   const { name, email, password } = req.body;
-  //   const file = req.file
   if (!name || !email || !password) {
     return next(new ErrorHandler("all fields are required", 400));
   }
@@ -18,6 +19,9 @@ export const userRegister = cathAsyncError(async function (req, res, next) {
     return next(new ErrorHandler("User already exits", 409));
   }
   //upload file on cloudanry
+  const file = req.file;
+  const fileUri = getDataUri(file);
+  const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
   // const hashedPassword = await bcrypt.hash(password, 10);
 
   user = await UserModel.create({
@@ -25,8 +29,8 @@ export const userRegister = cathAsyncError(async function (req, res, next) {
     email,
     password,
     avatar: {
-      public_id: "temp",
-      url: "temp",
+      public_id: mycloud.public_id,
+      url: mycloud.secure_url,
     },
   });
 
@@ -36,7 +40,7 @@ export const userRegister = cathAsyncError(async function (req, res, next) {
 //login api
 export const userLogin = cathAsyncError(async function (req, res, next) {
   const { email, password } = req.body;
-  //   const file = req.file
+
   if (!email || !password) {
     return next(new ErrorHandler("all fields are required", 400));
   }
@@ -117,7 +121,15 @@ export const updateProfilePicture = cathAsyncError(async function (
   res,
   next
 ) {
-  //coundary image upload
+  const user = await UserModel.findById(req.user._id);
+  const file = req.file;
+  const fileUri = getDataUri(file);
+  await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+
+  const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
+  user.avatar.public_id = mycloud.public_id;
+  user.avatar.url = mycloud.secure_url;
+  await user.save();
   res.status(200).json({
     success: true,
     message: "profile changed successfully",

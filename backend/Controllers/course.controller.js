@@ -78,7 +78,7 @@ export const addLecture = cathAsyncError(async function (req, res, next) {
     description,
     videos: {
       public_id: mycloud.public_id,
-      url: mycloud.url,
+      url: mycloud.secure_url,
     },
   });
 
