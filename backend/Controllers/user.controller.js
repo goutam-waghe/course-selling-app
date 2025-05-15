@@ -200,11 +200,7 @@ export const addToPlaylist = cathAsyncError(async function (req, res, next) {
   });
 });
 //remove from playlist
-export const removeFromPlaylist = cathAsyncError(async function (
-  res,
-  res,
-  next
-) {
+export const removeFromPlaylist = cathAsyncError(async function (res, next) {
   const courseId = req.body.id;
   const user = await UserModel.findById(req.user._id);
   const course = await CourseModel.findById(courseId);
