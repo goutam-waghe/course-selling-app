@@ -51,7 +51,7 @@ export const userLogin = catchAsyncError(async function (req, res, next) {
   }
 
   const isMatched = await user.ComparePassword(password);
-  console.log(isMatched);
+
   if (!isMatched) {
     return next(new ErrorHandler("password or email is incorrect ", 400));
   }
@@ -64,8 +64,6 @@ export const userLogout = catchAsyncError(async function (req, res, next) {
   const options = {
     expires: new Date(Date.now()),
     httpOnly: true,
-    // secure: true,
-    sameSite: "none",
   };
   res.status(200).cookie("token", null, options).json({
     success: true,
@@ -121,9 +119,13 @@ export const updateProfilePicture = catchAsyncError(async function (
   res,
   next
 ) {
+  console.log("p1");
   const user = await UserModel.findById(req.user._id);
+
   const file = req.file;
+
   const fileUri = getDataUri(file);
+  console.log(fileUri);
   await cloudinary.v2.uploader.destroy(user.avatar.public_id);
 
   const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);

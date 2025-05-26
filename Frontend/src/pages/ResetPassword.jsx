@@ -1,16 +1,36 @@
-import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom'
+import { resetPassword } from '../redux/actions/profileActions';
+import { LoadUser } from '../redux/actions/userActions';
+import toast from 'react-hot-toast';
 
 const ResetPassword = () => {
+  const navigate = useNavigate()
     const [password , setPassword] = useState("")
-    const params = useParams();
-    function resetPasswordHandler(e)
+    const {token} = useParams();
+    const dispatch = useDispatch();
+    async function resetPasswordHandler(e)
     {
         e.preventDefault();
-        console.log(password);
-        console.log(params.token)
-        setPassword("");
+       await dispatch(resetPassword(token , password));
+       navigate("/login")
+       setPassword("");
     }
+    const {loading , error , message} = useSelector(state => state.profile)
+
+  useEffect(() => {
+      if(error)
+      {
+        toast.error(error)
+        dispatch({type:"clearError"})
+      }
+      if(message)
+      {
+        toast.success(message)
+        dispatch({type:"clearMessage"})
+      }
+    } , [dispatch , error , message])
   return (
   
        <div className='h-[90vh] flex items-center justify-center'>

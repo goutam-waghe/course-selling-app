@@ -19,11 +19,11 @@ export const createCourse = catchAsyncError(async function (req, res, next) {
     return next(new ErrorHandler("please add all fields", 400));
   }
   const file = req.file;
-  console.log("this is me ", file);
+
   const fileUri = getDataUri(file);
 
   const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
-  console.log(mycloud);
+
   const course = await CourseModel.create({
     title,
     description,

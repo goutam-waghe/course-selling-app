@@ -22,20 +22,48 @@ import DashBoard from './pages/Admin/DashBoard.jsx'
 import AdminCourses from './pages/Admin/AdminCourses.jsx'
 import CreateCourses from './pages/Admin/CreateCourses.jsx'
 import Users from './pages/Admin/Users.jsx'
+import { useDispatch, useSelector } from 'react-redux'
+import {toast , Toaster} from "react-hot-toast"
+import { useEffect } from 'react'
+import { LoadUser } from './redux/actions/userActions.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+
+import Loader from './components/Loader.jsx'
+
 const App = () => {
+  const {isAuthenticated , user , error  , message  , loading} = useSelector(state => state.user)
+ const dispatch = useDispatch()
+  useEffect(()=> {
+    if(error){
+      toast.error(error);
+      dispatch({type:"clearError"})
+    }
+    if(message){
+      toast.success(message);
+      dispatch({type:"clearMessage"})
+    }
+  } ,[dispatch , error , message])
+
+  useEffect(() => {
+    dispatch(LoadUser())
+  }   ,[dispatch])
   return (
     <BrowserRouter>
-    <Header/>
+    {
+      loading ? <Loader/> :
+      (<><Header isAuthenticated={isAuthenticated} user={user}/>
     <Routes >
       
       <Route path='/' element={<Home/>}/>
-      <Route path='/login' element={<Login/>}/>
-      <Route path='/Signup' element={<Signup/>}/>
-      <Route path='/forgetpassword' element={<ForgetPassword/>}/>
-      <Route path='/resetpassword/:token' element={<ResetPassword/>}/>
-      <Route path='/profile' element={<Profile/>}/>
-      <Route path='/updateprofile' element={<UpdateProfile/>}/>
-      <Route path='/changepassword' element={<ChangePassword/>}/>
+      <Route path='/login' element={ <ProtectedRoute isAuthenticated={!isAuthenticated} redirect="/profile"><Login/></ProtectedRoute> }/>
+      <Route path='/Signup' element={<ProtectedRoute isAuthenticated={!isAuthenticated} redirect="/profile"><Signup/></ProtectedRoute>}/>
+      <Route path='/forgetpassword' element={<ProtectedRoute isAuthenticated={!isAuthenticated} redirect="/profile"><ForgetPassword/></ProtectedRoute>}/>
+      <Route path='/resetpassword/:token' element={<ProtectedRoute isAuthenticated={!isAuthenticated} redirect="/profile"><ResetPassword/></ProtectedRoute>}/>
+      <Route path='/profile' element={
+        <ProtectedRoute isAuthenticated={isAuthenticated}><Profile user={user}/></ProtectedRoute>
+      }/>
+      <Route path='/updateprofile' element={<UpdateProfile user={user}/>}/>
+      <Route path='/changepassword' element={ <ProtectedRoute isAuthenticated={isAuthenticated}><ChangePassword/></ProtectedRoute>}/>
       <Route path='/courses' element={<Courses/>}/>
       <Route path='/course/:id' element={<CourseDetails/>}/>
       <Route path='/contact' element={<ContactUs/>}/>
@@ -47,12 +75,14 @@ const App = () => {
 
 
       {/* addmin routes  */}
-      <Route path='/admin/dashboard' element={<DashBoard/>} />
+      <Route path='/admin/dashboard' element={<ProtectedRoute isAuthenticated={isAuthenticated} isAdmin={user && user.role === 'admin'} adminRoute={true}><DashBoard/></ProtectedRoute> } />
       <Route path='/admin/courses' element={<AdminCourses/>} />
       <Route path='/admin/createcourse' element={<CreateCourses/>} />
       <Route path='/admin/users' element={<Users/>} />
     </Routes>
     <Footer/>
+    <Toaster/></>)
+    }
     </BrowserRouter>
   )
 }

@@ -7,13 +7,21 @@ import {
   FaTachometerAlt,
   FaTimes,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
-const Header = () => {
+import { Link } from "react-router-dom";
+import { logout } from "../redux/actions/userActions";
+
+const Header = ({isAuthenticated = false , user}) => {
   const [isDark, SetIsdark] = useState(false);
   const [barisOpen, setbarIsOpne] = useState(false);
-  const isAuthanticated = true;
-  const role = "admin";
+
+  const role = user?.role || ""
+  const dispatch = useDispatch()
+  function logoutHandler(){
+    dispatch(logout())
+  }
+ 
   function barHandler()
   {
     setbarIsOpne(!barisOpen)
@@ -39,7 +47,7 @@ const Header = () => {
         </div>
 
         <div>
-          {isAuthanticated ? (
+          {!isAuthenticated ? (
             <div className="flex flex-col justify-center gap-1 items-center mb-5">
               <Link onClick={barHandler} to={"/login"}>
                 <button className="bg-yellow-500 text-sm rounded-lg w-[200px] p-2 text-center">Login</button>
@@ -55,7 +63,7 @@ const Header = () => {
                 <button>profile</button>
               </Link>
               <Link onClick={barHandler} to={"/login"}>
-                <button className="flex gap-1 items-center justify-center">
+                <button onClick={logoutHandler} className="flex gap-1 items-center justify-center">
                   <FaSignOutAlt className="text-sm" />
                   logout
                 </button>

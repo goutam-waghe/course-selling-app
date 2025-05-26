@@ -1,13 +1,31 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { forgetPassword } from '../redux/actions/profileActions';
+import toast from 'react-hot-toast';
 
 const ForgetPassword = () => {
     const [email , setEmail ]  = useState("")
+    const {message , error , loading} = useSelector(state => state.profile)
+    const dispatch = useDispatch();
     function forgetPasswordHandler(e)
     {
         e.preventDefault()
-        console.log(email)
-        setEmail("")
+        dispatch(forgetPassword(email));
+     
     }
+
+    useEffect(() => {
+      if(error)
+      {
+        toast.error(error)
+        dispatch({type:"clearError"})
+      }
+      if(message)
+      {
+        toast.success(message)
+        dispatch({type:"clearMessage"})
+      }
+    } , [dispatch , error , message])
   return (
     <div className='h-screen flex items-center justify-center'>
     <form action="" onSubmit={(e) => forgetPasswordHandler(e)} className='w-[90%] md:w-1/2 lg:w-2/3 xl:w-1/3 flex flex-col gap-7 md:gap-5 justify-center'>
